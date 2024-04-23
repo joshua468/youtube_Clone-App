@@ -1,45 +1,56 @@
 package main
 
 import (
-	"database/sql"
 	"net/http"
+	"os"
+
+	"gorm.io/driver/mysql"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/joshua468/youtube_Clone/handlers"
 	"github.com/joshua468/youtube_Clone/repository"
 	"github.com/joshua468/youtube_Clone/services"
+	"github.com/rs/zerolog"
+	"gorm.io/gorm"
 )
 
 func main() {
-	// Initialize MySQL database connection
-	db, err := sql.Open("mysql", "Temi2080:170821002@tcp(127.0.0.1:3306)/database_name")
-	if err != nil {
-		panic("Error connecting to MySQL database: " + err.Error())
-	}
-	defer db.Close()
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
 
-	// Initialize repository
+	dsn := dbUser + ":" + dbPassword + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?parseTime=true"
+
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		logger.Panic().Err(err).Msg("Error connecting to MySQL database")
+	}
+	defer func() {
+		dbSQL, err := db.DB()
+		if err != nil {
+			logger.Error().Err(err).Msg("Error getting database connection")
+		}
+		dbSQL.Close()
+	}()
 	userRepo := repository.NewUserRepository(db)
 	videoRepo := repository.NewVideoRepository(db)
 
-	// Initialize services
-	userService := services.NewUserService(*userRepo)
-	videoService := services.NewVideoService(*videoRepo)
+	userService := services.NewUserService(userRepo)
+	videoService := services.NewVideoService(videoRepo)
 
-	// Initialize handlers
 	userHandler := handlers.NewUserHandlers(userService)
 	videoHandler := handlers.NewVideoHandlers(videoService)
 
 	router := gin.Default()
 
-	// Register routes using Gin router
 	userHandler.RegisterRoutes(router)
 	videoHandler.RegisterRoutes(router)
 
-	// Start HTTP server
-	port := "8080" // Or any port you prefer
+	port := "8080"
 	if err := http.ListenAndServe(":"+port, router); err != nil {
-		panic("Error starting HTTP server: " + err.Error())
+		logger.Panic().Err(err).Msg("Error starting HTTP server")
 	}
 }

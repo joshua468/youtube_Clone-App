@@ -10,7 +10,7 @@ type UserServiceImpl struct {
 	UserRepo repository.UserRepository
 }
 
-func NewUserService(userRepo repository.UserRepository) *UserServiceImpl {
+func NewUserService(userRepo repository.UserRepository) UserService {
 	return &UserServiceImpl{
 		UserRepo: userRepo,
 	}
@@ -64,6 +64,6 @@ func (s *UserServiceImpl) DeleteUser(id string) error {
 }
 
 // ListUsers retrieves a list of all users.
-func (s *UserServiceImpl) ListUsers() ([]*models.User, error) {
+func (s *UserServiceImpl) ListUsers(offset, pageSize int) ([]*models.User, error) {
 	return s.UserRepo.List()
 }

@@ -10,7 +10,7 @@ type VideoServiceImpl struct {
 	VideoRepo repository.VideoRepository
 }
 
-func NewVideoService(videoRepo repository.VideoRepository) *VideoServiceImpl {
+func NewVideoService(videoRepo repository.VideoRepository) VideoService {
 	return &VideoServiceImpl{
 		VideoRepo: videoRepo,
 	}
@@ -21,17 +21,14 @@ func (s *VideoServiceImpl) CreateVideo(video *models.Video) error {
 }
 
 func (s *VideoServiceImpl) GetVideoByID(id string) (*models.Video, error) {
-
 	videoID, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
-
 	return s.VideoRepo.GetByID(videoID)
 }
 
 func (s *VideoServiceImpl) UpdateVideo(id string, video *models.Video) error {
-
 	videoID, err := uuid.Parse(id)
 	if err != nil {
 		return err
@@ -51,15 +48,13 @@ func (s *VideoServiceImpl) UpdateVideo(id string, video *models.Video) error {
 }
 
 func (s *VideoServiceImpl) DeleteVideo(id string) error {
-
 	videoID, err := uuid.Parse(id)
 	if err != nil {
 		return err
 	}
-
 	return s.VideoRepo.Delete(videoID)
 }
 
-func (s *VideoServiceImpl) ListVideos() ([]*models.Video, error) {
+func (s *VideoServiceImpl) ListVideos(page, pageSize int) ([]*models.Video, error) {
 	return s.VideoRepo.List()
 }

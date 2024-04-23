@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joshua468/youtube_Clone/models"
 	"github.com/joshua468/youtube_Clone/repository"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/joshua468/youtube_Clone/utils"
 )
 
 type UserApp struct {
@@ -26,7 +26,7 @@ func (ua *UserApp) GetUserByID(userID uuid.UUID) (*models.User, error) {
 }
 
 func (ua *UserApp) CreateUser(req *models.CreateUserRequest) (*models.User, error) {
-	hashedPassword, err := hashPassword(req.Password)
+	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -43,12 +43,4 @@ func (ua *UserApp) CreateUser(req *models.CreateUserRequest) (*models.User, erro
 		return nil, err
 	}
 	return user, nil
-}
-
-func hashPassword(password string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hashedPassword), nil
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joshua468/youtube_Clone/models"
@@ -9,7 +10,7 @@ import (
 )
 
 type UserHandlers struct {
-	Service services.UserService 
+	Service services.UserService
 }
 
 func NewUserHandlers(service services.UserService) *UserHandlers {
@@ -41,7 +42,6 @@ func (h *UserHandlers) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-
 func (h *UserHandlers) GetUserByID(c *gin.Context) {
 	id := c.Param("id")
 
@@ -71,7 +71,6 @@ func (h *UserHandlers) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-
 func (h *UserHandlers) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 
@@ -84,7 +83,10 @@ func (h *UserHandlers) DeleteUser(c *gin.Context) {
 }
 
 func (h *UserHandlers) ListUsers(c *gin.Context) {
-	users, err := h.Service.ListUsers()
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	users, err := h.Service.ListUsers(page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

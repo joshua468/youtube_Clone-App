@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joshua468/youtube_Clone/models"
@@ -23,7 +24,7 @@ func (h *VideoHandlers) RegisterRoutes(router *gin.Engine) {
 	router.GET("/videos/:id", h.GetVideoByID)
 	router.PUT("/videos/:id", h.UpdateVideo)
 	router.DELETE("/videos/:id", h.DeleteVideo)
-	router.GET("/videos", h.ListVideos)
+	router.GET("/videos", h.listVideos)
 }
 
 func (h *VideoHandlers) CreateVideo(c *gin.Context) {
@@ -82,7 +83,10 @@ func (h *VideoHandlers) DeleteVideo(c *gin.Context) {
 }
 
 func (h *VideoHandlers) ListVideos(c *gin.Context) {
-	videos, err := h.Service.ListVideos()
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	videos, err := h.Service.ListVideos(page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
